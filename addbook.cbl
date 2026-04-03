@@ -8,11 +8,9 @@
       INPUT-OUTPUT SECTION.
        FILE-CONTROL.
            SELECT LIBRARY-DATABASE *> Defines the file to be used as the DB
-           ASSIGN TO "./library.db"
-           ORGANIZATION IS INDEXED
-           ACCESS MODE IS DYNAMIC
-           RECORD KEY IS BOOK-ISBN
-           ALTERNATE RECORD KEY IS BOOK-TITLE WITH DUPLICATES
+           ASSIGN TO "library.db"
+           ORGANIZATION IS RELATIVE
+           ACCESS MODE IS SEQUENTIAL
            FILE STATUS IS DBS.
  
        DATA DIVISION.
@@ -32,7 +30,7 @@
          88 DBS-OK                      VALUE "00".
  
       PROCEDURE DIVISION.
-           OPEN OUTPUT LIBRARY-DATABASE. *> Try opening database file
+           OPEN EXTEND LIBRARY-DATABASE. *> Try opening database file
            IF NOT DBS-OK THEN
                DISPLAY "Error opening database file"
                STOP RUN
@@ -51,11 +49,7 @@
            DISPLAY "Please enter the ISBN of the book (10 digits): "
            ACCEPT BOOK-ISBN
 
-           WRITE LIBRARY-RECORD
-               WITH LOCK
-               INVALID KEY DISPLAY "error: incorrect info given"
-               NOT INVALID KEY DISPLAY "book added to database"
-           END-WRITE.
+           WRITE LIBRARY-RECORD.
 
            CLOSE LIBRARY-DATABASE.
            STOP RUN.
