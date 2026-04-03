@@ -9,10 +9,8 @@
        FILE-CONTROL.
            SELECT LIBRARY-DATABASE *> Defines the file to be used as the DB
            ASSIGN TO "./library.db"
-           ORGANIZATION IS INDEXED
-           ACCESS MODE IS DYNAMIC
-           RECORD KEY IS BOOK-ISBN
-           ALTERNATE RECORD KEY IS BOOK-TITLE WITH DUPLICATES
+           ORGANIZATION IS RELATIVE
+           ACCESS MODE IS SEQUENTIAL
            FILE STATUS IS DBS.
  
        DATA DIVISION.
@@ -29,27 +27,46 @@
            
        WORKING-STORAGE SECTION.
        01 WS-ISBN              PIC 9(10).
+       01 EOF                  PIC X(2) VALUE 'N'.
+       01 IS-FOUND             PIC X(2) VALUE 'N'.
        01 DBS                  PIC X(2).
           88 DBS-OK                  VALUE "00".
  
       PROCEDURE DIVISION.
-           OPEN OUTPUT LIBRARY-DATABASE. *> Try opening database file
+       MAIN-PROCEDURE.
+           PERFORM OPEN-DATABASE
+           PERFORM GET-BOOK-ISBN
+           PERFORM FIND-AND-DELETE-BOOK UNTIL EOF IS NOT = 'N' OR IS-FOUND IS NOT = 'N'
+           CLOSE LIBRARY-DATABASE
+           STOP RUN.
+
+       OPEN-DATABASE.
+           OPEN I-O LIBRARY-DATABASE. *> Try opening database file
            IF NOT DBS-OK THEN
-               DISPLAY "Error opening database file"
-               STOP RUN
+              DISPLAY "Error opening database file"
+              STOP RUN
            END-IF.
 
-               DISPLAY "Please enter the ISBN of the book you want to delete".
-               ACCEPT WS-ISBN.
-               MOVE WS-ISBN TO BOOK-ISBN. *> Search for book in file
-               DELETE LIBRARY-DATABASE RECORD
-                   INVALID KEY
-                       DISPLAY "error: Book not found"
-                   NOT INVALID KEY
-                       DISPLAY "Book with ISBN" WS-ISBN "deleted successfully"
-               END-DELETE.
+       GET-BOOK-ISBN.
+           DISPLAY "Please enter the ISBN of the book to be deleted"
+           ACCEPT WS-ISBN.
 
+       FIND-AND-DELETE-BOOK.
+           READ LIBRARY-DATABASE
+                AT END
+                    MOVE 'Y' TO EOF
 
+                    IF IS-FOUND IS EQUAL TO 'N' THEN
+                        DISPLAY "book not found"
+                    END-IF
 
-           CLOSE LIBRARY-DATABASE.
-           STOP RUN.
+                NOT AT END
+                    IF BOOK-ISBN IS EQUAL TO WS-ISBN THEN
+                        PERFORM DELETE-BOOK
+                        MOVE 'Y' TO IS-FOUND
+                    END-IF
+           END-READ.
+
+       DELETE-BOOK.
+           DELETE LIBRARY-DATABASE RECORD
+           DISPLAY "book deleted".
