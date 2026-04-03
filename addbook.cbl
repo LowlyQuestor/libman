@@ -28,13 +28,6 @@
            05 BOOK-ISBN        PIC 9(10).
            
        WORKING-STORAGE SECTION.
-       01 WS-RECORD.
-          05 WS-TITLE             PIC X(25).
-          05 WS-AUTHOR            PIC X(20).
-          05 WS-PUBLISHER         PIC X(20).
-          05 WS-YEAR              PIC 9(4).
-          05 WS-ISBN              PIC 9(10).
-
       01 DBS                      PIC X(2).
          88 DBS-OK                      VALUE "00".
  
@@ -48,16 +41,21 @@
 
            *> Get info from the user
            DISPLAY "Please enter the title of the book: "
-           ACCEPT WS-TITLE
+           ACCEPT BOOK-TITLE
            DISPLAY "Please enter the author of the book: "
-           ACCEPT WS-AUTHOR
+           ACCEPT BOOK-AUTHOR
            DISPLAY "Please enter the publisher of the book: "
-           ACCEPT WS-PUBLISHER
+           ACCEPT BOOK-PUBLISHER
            DISPLAY "Please enter the year the book was published: "
-           ACCEPT WS-YEAR
+           ACCEPT BOOK-YEAR
            DISPLAY "Please enter the ISBN of the book (10 digits): "
-           ACCEPT WS-ISBN
+           ACCEPT BOOK-ISBN
 
-           WRITE LIBRARY-RECORD FROM WS-RECORD. *> Write to the file
+           WRITE LIBRARY-RECORD
+               WITH LOCK
+               INVALID KEY DISPLAY "error: incorrect info given"
+               NOT INVALID KEY DISPLAY "book added to database"
+           END-WRITE.
+
            CLOSE LIBRARY-DATABASE.
            STOP RUN.
