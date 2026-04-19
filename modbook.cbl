@@ -101,4 +101,6 @@
                    REWRITE LIBRARY-RECORD
                    DISPLAY "Record changed"
                    MOVE 'Y' TO US-DONE
+               WHEN OTHER
+                   DISPLAY "Invalid option"
            END-EVALUATE.
